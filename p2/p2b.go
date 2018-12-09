@@ -27,6 +27,28 @@ func letterCount(l map[rune]int, c int) bool {
 	return false
 }
 
+func match(s1 string, s2 string) (bool, string) {
+	misses := 0
+	isMatch := true
+	misMatchIdx := 0
+	// convert strings to rune slices
+	r1 := []rune(s1)
+	r2 := []rune(s2)
+
+	for i, l := range r1 {
+		if l != r2[i] {
+			misses++
+			misMatchIdx = i
+		}
+		if misses > 1 {
+			isMatch = false
+			break
+		}
+	}
+	commonString := s1[:misMatchIdx] + s2[misMatchIdx+1:]
+	return isMatch, commonString
+}
+
 // readLines reads a whole file into memory
 // and returns a slice of its lines.
 func readLines(path string) ([]string, error) {
@@ -44,31 +66,31 @@ func readLines(path string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
+func testMatches(s string, l []string) (bool, string) {
+	for _, i := range l {
+		isMatch, commonString := match(s, i)
+		if isMatch {
+			return true, commonString
+		}
+	}
+	return false, ""
+}
+
 func main() {
 
-	input, err := readLines("p2/p2.gop2-input.txt")
+	input, err := readLines("p2/p2-input.txt")
 	if err != nil {
 		log.Fatalf("readLines: %s", err)
 	}
-	count2 := 0
-	count3 := 0
+	var commonString string
+	var foundMatch bool
 
-	for _, line := range input {
-
-		b := bucketLetters(line)
-		m2 := letterCount(b, 2)
-		m3 := letterCount(b, 3)
-		fmt.Println(line)
-		fmt.Printf("2: %t\n", m2)
-		fmt.Printf("3: %t\n", m3)
-		if m2 {
-			count2++
-		}
-		if m3 {
-			count3++
+	for i, line := range input {
+		foundMatch, commonString = testMatches(line, input[i+1:])
+		if foundMatch {
+			//s1 = line
+			break
 		}
 	}
-	fmt.Printf("Count 2: %d\n", count2)
-	fmt.Printf("Count 3: %d\n", count3)
-	fmt.Printf("CheckSum: %d\n", count2*count3)
+	fmt.Println(commonString)
 }
